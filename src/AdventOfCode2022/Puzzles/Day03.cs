@@ -4,7 +4,7 @@ namespace AdventOfCode2022.Puzzles;
 
 public class Day03 : HappyPuzzleBase
 {
-	public override void SolvePart1()
+	public override object SolvePart1()
 	{
 		uint prioritySum = 0;
 		var ruckSacksData = File.ReadLines(AssetPath());
@@ -16,10 +16,10 @@ public class Day03 : HappyPuzzleBase
 			prioritySum += FindDuplicatesAndSumReduce(ruckSackCompartimentA, ruckSackCompartimentB);
 		}
 
-		Console.WriteLine(prioritySum);
+		return prioritySum;
 	}
 
-	public override void SolvePart2()
+	public override object SolvePart2()
 	{
 		uint prioritySum = 0;
 		var ruckSacksData = File.ReadAllLines(AssetPath());
@@ -33,7 +33,7 @@ public class Day03 : HappyPuzzleBase
 			prioritySum += FindDuplicatesAndSumReduce(ruckSackA, ruckSackB, ruckSackC);
 		} while (++bagIndex < (ruckSacksData.Length / 3));
 
-		Console.WriteLine(prioritySum);
+		return prioritySum;
 	}
 
 	private static uint FindDuplicatesAndSumReduce(params string[] dataSets)
@@ -43,8 +43,6 @@ public class Day03 : HappyPuzzleBase
 		{
 			duplicates = duplicates.Intersect(dataSets[i]);
 		}
-
-		;
 
 		return duplicates.Aggregate((uint) 0, (acc, c) => acc + ConvertToPriority(c));
 	}

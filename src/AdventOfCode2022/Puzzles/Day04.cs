@@ -4,9 +4,8 @@ namespace AdventOfCode2022.Puzzles;
 
 public class Day04 : HappyPuzzleBase
 {
-	public override void SolvePart1()
-	{
-		Console.WriteLine(File.ReadLines(AssetPath())
+	public override object SolvePart1() =>
+		File.ReadLines(AssetPath())
 			.Select(x => x
 				.Split(',')
 				.Select(y => y
@@ -16,12 +15,10 @@ public class Day04 : HappyPuzzleBase
 				.Select(y => (start: y.First(), end: y.Last()))
 				.ToArray())
 			.Count(x => (x[0].start >= x[1].start && x[0].end <= x[1].end) ||
-			            (x[1].start >= x[0].start && x[1].end <= x[0].end)));
-	}
+			            (x[1].start >= x[0].start && x[1].end <= x[0].end));
 
-	public override void SolvePart2()
-	{
-		Console.WriteLine(File.ReadLines(AssetPath())
+	public override object SolvePart2() =>
+		File.ReadLines(AssetPath())
 			.Select(x => x
 				.Split(',')
 				.Select(y => y
@@ -30,6 +27,5 @@ public class Day04 : HappyPuzzleBase
 					.ToArray())
 				.Select(y => (start: y.First(), end: y.Last()))
 				.ToArray())
-			.Count(x => (x[0].start <= x[1].end && x[1].start <= x[0].end)));
-	}
+			.Count(x => (x[0].start <= x[1].end && x[1].start <= x[0].end));
 }

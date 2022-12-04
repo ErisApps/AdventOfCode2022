@@ -7,7 +7,7 @@ public class Day02 : HappyPuzzleBase
 	private const int ASCII_OFFSET = 65;
 	private const int ADDITIONAL_ASCII_OFFSET = 23;
 
-	public override void SolvePart1()
+	public override object SolvePart1()
 	{
 		var totalScore = 0;
 
@@ -22,10 +22,10 @@ public class Day02 : HappyPuzzleBase
 			totalScore += player2MoveRaw + 1 + MapOutcome(outcome);
 		}
 
-		Console.WriteLine(totalScore);
+		return totalScore;
 	}
 
-	public override void SolvePart2()
+	public override object SolvePart2()
 	{
 		var totalScore = 0;
 
@@ -50,7 +50,7 @@ public class Day02 : HappyPuzzleBase
 			totalScore += player2MoveRaw + 1 + MapOutcome(outcome);
 		}
 
-		Console.WriteLine(totalScore);
+		return totalScore;
 	}
 
 	private static Outcome CalculateOutcome(Move player1Move, Move player2Move)

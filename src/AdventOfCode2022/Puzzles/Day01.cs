@@ -4,16 +4,16 @@ namespace AdventOfCode2022.Puzzles;
 
 public class Day01 : HappyPuzzleBase
 {
-	public override void SolvePart1()
+	public override object SolvePart1()
 	{
 		var caloriesList = ParseCaloriesData();
-		Console.WriteLine(caloriesList.Max());
+		return caloriesList.Max();
 	}
 
-	public override void SolvePart2()
+	public override object SolvePart2()
 	{
 		var caloriesList = ParseCaloriesData();
-		Console.WriteLine(caloriesList.OrderDescending().Take(3).Sum(x => x));
+		return caloriesList.OrderDescending().Take(3).Sum(x => x);
 	}
 
 	private IEnumerable<uint> ParseCaloriesData()
