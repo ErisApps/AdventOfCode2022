@@ -4,37 +4,20 @@ namespace AdventOfCode2022.Puzzles;
 
 public class Day03 : HappyPuzzleBase
 {
-	public override object SolvePart1()
-	{
-		uint prioritySum = 0;
-		var ruckSacksData = File.ReadLines(AssetPath());
-		foreach (var ruckSack in ruckSacksData)
-		{
-			var ruckSackCompartimentLength = ruckSack.Length / 2;
-			var ruckSackCompartimentA = ruckSack[..ruckSackCompartimentLength];
-			var ruckSackCompartimentB = ruckSack[ruckSackCompartimentLength..];
-			prioritySum += FindDuplicatesAndSumReduce(ruckSackCompartimentA, ruckSackCompartimentB);
-		}
+	public override object SolvePart1() =>
+		File.ReadLines(AssetPath())
+			.Aggregate<string, uint>(0, (acc, ruckSack) =>
+			{
+				var ruckSackCompartimentLength = ruckSack.Length / 2;
+				var ruckSackCompartimentA = ruckSack[..ruckSackCompartimentLength];
+				var ruckSackCompartimentB = ruckSack[ruckSackCompartimentLength..];
+				return acc + FindDuplicatesAndSumReduce(ruckSackCompartimentA, ruckSackCompartimentB);
+			});
 
-		return prioritySum;
-	}
-
-	public override object SolvePart2()
-	{
-		uint prioritySum = 0;
-		var ruckSacksData = File.ReadAllLines(AssetPath());
-		var bagIndex = 0;
-		do
-		{
-			var localIndex = bagIndex * 3;
-			var ruckSackA = ruckSacksData.ElementAt(localIndex);
-			var ruckSackB = ruckSacksData.ElementAt(localIndex + 1);
-			var ruckSackC = ruckSacksData.ElementAt(localIndex + 2);
-			prioritySum += FindDuplicatesAndSumReduce(ruckSackA, ruckSackB, ruckSackC);
-		} while (++bagIndex < (ruckSacksData.Length / 3));
-
-		return prioritySum;
-	}
+	public override object SolvePart2() =>
+		File.ReadAllLines(AssetPath())
+			.Chunk(3)
+			.Aggregate<string[], uint>(0, (acc, bags) => acc + FindDuplicatesAndSumReduce(bags));
 
 	private static uint FindDuplicatesAndSumReduce(params string[] dataSets)
 	{
@@ -44,7 +27,7 @@ public class Day03 : HappyPuzzleBase
 			duplicates = duplicates.Intersect(dataSets[i]);
 		}
 
-		return duplicates.Aggregate((uint) 0, (acc, c) => acc + ConvertToPriority(c));
+		return duplicates.Aggregate<char, uint>(0, (acc, c) => acc + ConvertToPriority(c));
 	}
 
 	private static uint ConvertToPriority(char c)
