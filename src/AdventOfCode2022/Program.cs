@@ -4,14 +4,8 @@ using AdventOfCode2022.Shared;
 
 Console.WriteLine("Hello, World!");
 
-const bool executeAll = true;
-var puzzleInstances = typeof(Program)
-	.Assembly
-	.GetTypes()
-	.Where(x => x.IsAssignableTo(typeof(HappyPuzzleBase)) && x.IsClass && !x.IsAbstract)
-	.OrderBy(x => x.Name)
-	// ReSharper disable once HeuristicUnreachableCode
-	.TakeLast(executeAll ? int.MaxValue : 1)
+var puzzleInstances = HappyPuzzleHelpers
+	.DiscoverPuzzles()
 	.Select(x => (HappyPuzzleBase) Activator.CreateInstance(x)!)
 	.ToList();
 
