@@ -29,5 +29,17 @@ public class Day06 : HappyPuzzleBase
 		return i + markerSize;
 	}
 
-	private static bool HasUniqueCharacters(char[] input) => new HashSet<char>(input).Count == input.Length;
+	private static bool HasUniqueCharacters(char[] input)
+	{
+		for (var i = 0; i < input.Length; i++)
+		for (var j = i + 1; j < input.Length; j++)
+		{
+			if (input[i] == input[j])
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
 }
