@@ -16,22 +16,22 @@ public class Day01 : HappyPuzzleBase
 		return caloriesList.OrderDescending().Take(3).Sum(x => x);
 	}
 
-	private IEnumerable<uint> ParseCaloriesData()
-	{
-		var caloriesEnumerable = File.ReadLines(AssetPath());
-		var caloriesList = new List<uint> { 0 };
-		foreach (var calorieRaw in caloriesEnumerable)
-		{
-			if (string.IsNullOrWhiteSpace(calorieRaw))
-			{
-				caloriesList.Add(0);
-			}
-			else
-			{
-				caloriesList[^1] += uint.Parse(calorieRaw);
-			}
-		}
+private IEnumerable<uint> ParseCaloriesData()
+{
+	var caloriesEnumerable = File.ReadLines(AssetPath());
 
-		return caloriesList;
+	var currentCalories = 0u;
+	foreach (var calorieRaw in caloriesEnumerable)
+	{
+		if (string.IsNullOrWhiteSpace(calorieRaw))
+		{
+			yield return currentCalories;
+			currentCalories = 0;
+		}
+		else
+		{
+			currentCalories += uint.Parse(calorieRaw);
+		}
 	}
+}
 }
