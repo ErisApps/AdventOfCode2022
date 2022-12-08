@@ -10,10 +10,11 @@ public class Day08 : HappyPuzzleBase
 
 		var forestHeight = treeHeightMap.Length;
 		var forestWidth = treeHeightMap[0].Length;
-		var visibleTreeCount = 0;
+		var visibleTreeCount = 2 * forestHeight + 2 * forestWidth - 4;
+		// -4 so we don't count the corners twice
 
-		for (var y = 0; y < forestHeight; y++)
-		for (var x = 0; x < forestWidth; x++)
+		for (var y = 1; y < forestHeight - 1; y++)
+		for (var x = 1; x < forestWidth - 1; x++)
 		{
 			if (CheckTreeVisible(treeHeightMap, x, y))
 			{
@@ -33,8 +34,8 @@ public class Day08 : HappyPuzzleBase
 			var forestHeight = treeHeightMap.Length;
 			var forestWidth = treeHeightMap[0].Length;
 
-			for (var x = 2; x < forestWidth; x++)
-			for (var y = 3; y < forestHeight; y++)
+			for (var x = 1; x < forestWidth - 1; x++)
+			for (var y = 1; y < forestHeight - 1; y++)
 			{
 				yield return CalculateScenicScore(treeHeightMap, x, y);
 			}
