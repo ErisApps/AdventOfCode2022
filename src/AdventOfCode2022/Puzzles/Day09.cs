@@ -49,12 +49,15 @@ public class Day09 : HappyPuzzleBase
 			var moveVector = ConvertDirectionToMoveVector(moveDirection);
 			for (var i = 0; i < stepCount; i++)
 			{
-				if (frameCount >= 30)
+				subFrameCount = 0;
+				if (++frameCount >= 31)
 				{
-					Debugger.Break();
+					// Debugger.Break();
 				}
 
 				knots[0] += moveVector;
+
+				// VisualizePositionsFrame(knots);
 
 				for (var j = 1; j < knots.Length; j++)
 				{
@@ -63,12 +66,16 @@ public class Day09 : HappyPuzzleBase
 					{
 						break;
 					}
+
+					// VisualizePositionsFrame(knots);
 				}
 
 				VisualizePositionsFrame(knots);
 
 				uniquePositions.Add(knots.Last());
 			}
+
+			Console.WriteLine($"Finished move {moveDirection} with stepCount {stepCount} at frame {frameCount}");
 		}
 
 		VisualizeUniquePositions(uniquePositions);
@@ -99,7 +106,7 @@ public class Day09 : HappyPuzzleBase
 
 			if (moved && diffLesserPart != 0)
 			{
-				positionLesserPart += diffLesserPart;
+				positionLesserPart += Math.Sign(diffLesserPart);
 			}
 
 			return moved;
@@ -161,7 +168,6 @@ public class Day09 : HappyPuzzleBase
 		textWriter.WriteLine();
 	}
 
-	private int frameCount = 0;
 
 	private static string GetFrameAssetPath() => Path.Combine(Environment.CurrentDirectory, "Assets", "Frames");
 	private static void PrepareForVisualizePositionsFrames()
@@ -175,6 +181,9 @@ public class Day09 : HappyPuzzleBase
 		Directory.CreateDirectory(path);
 	}
 
+	private int frameCount = 0;
+	private int subFrameCount = 0;
+
 	private void VisualizePositionsFrame(Vector2[] positions)
 	{
 		const int minX = -100;
@@ -182,7 +191,12 @@ public class Day09 : HappyPuzzleBase
 		const int minY = -100;
 		const int maxY = 5;
 
-		var assetPath = Path.Combine(GetFrameAssetPath(), $"Day09_output_{++frameCount:D4}.txt");
+		/*const int minX = -25;
+		const int maxX = 25;
+		const int minY = -10;
+		const int maxY = 25;*/
+
+		var assetPath = Path.Combine(GetFrameAssetPath(), $"Day09_output_{frameCount:D4}_{++subFrameCount:D2}.txt");
 		using var fileStream = File.Create(assetPath);
 		using var textWriter = new StreamWriter(fileStream);
 
