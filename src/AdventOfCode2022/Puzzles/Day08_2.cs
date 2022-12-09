@@ -13,7 +13,7 @@ public class Day08_2 : HappyPuzzleBase
 		var visibleTreeCount = 2 * height + 2 * width - 4;
 		// -4 so we don't count the corners twice
 
-		ReadOnlySpan<int> treeHeightSpan = treeHeightMap.AsSpan();
+		ReadOnlySpan<byte> treeHeightSpan = treeHeightMap.AsSpan();
 
 		for (var y = 1; y < height - 1; y++)
 		for (var x = 1; x < width - 1; x++)
@@ -30,7 +30,7 @@ public class Day08_2 : HappyPuzzleBase
 	public override object SolvePart2()
 	{
 		var (treeHeightMap, height, width) = ParseTreeHeightMap();
-		ReadOnlySpan<int> treeHeightSpan = treeHeightMap.AsSpan();
+		ReadOnlySpan<byte> treeHeightSpan = treeHeightMap.AsSpan();
 
 		var max = 0;
 		for (var x = 1; x < width - 1; x++)
@@ -46,19 +46,19 @@ public class Day08_2 : HappyPuzzleBase
 		return max;
 	}
 
-	private (int[] treeHeightMap, int height, int width) ParseTreeHeightMap()
+	private (byte[] treeHeightMap, int height, int width) ParseTreeHeightMap()
 	{
 		var treeHeightMapData = File.ReadAllLines(AssetPath());
 		return (
-			treeHeightMap: File.ReadAllLines(AssetPath())
-				.SelectMany(treeLine => treeLine.Select(treeHeight => (int) treeHeight))
+			treeHeightMap: treeHeightMapData
+				.SelectMany(treeLine => treeLine.Select(treeHeight => (byte) treeHeight))
 				.ToArray(),
 			height: treeHeightMapData.Length,
 			width: treeHeightMapData[0].Length);
 	}
 
 	// Helpers part 1
-	private static bool CheckTreeVisible(ref ReadOnlySpan<int> treeHeightList, int width, int x, int y)
+	private static bool CheckTreeVisible(ref ReadOnlySpan<byte> treeHeightList, int width, int x, int y)
 	{
 		var treeRow = treeHeightList.Slice(y * width, width);
 		// Check if numbers to the left are lower than the number from current position
@@ -76,7 +76,7 @@ public class Day08_2 : HappyPuzzleBase
 		       CheckTreeVisibilityInDirection(ref treeColumn, y * width, width);
 	}
 
-	private static bool CheckTreeVisibilityInDirection(ref ReadOnlySpan<int> treeHeightsForOrientation, int index, int offset)
+	private static bool CheckTreeVisibilityInDirection(ref ReadOnlySpan<byte> treeHeightsForOrientation, int index, int offset)
 	{
 		var heightThreshold = treeHeightsForOrientation[index];
 		index += offset;
@@ -101,7 +101,7 @@ public class Day08_2 : HappyPuzzleBase
 	}
 
 	// Helpers part 2
-	private static int CalculateScenicScore(ref ReadOnlySpan<int> treeHeightList, int width, int x, int y)
+	private static int CalculateScenicScore(ref ReadOnlySpan<byte> treeHeightList, int width, int x, int y)
 	{
 		var treeRow = treeHeightList.Slice(y * width, width);
 		var treeColumn = treeHeightList[x..];
@@ -111,13 +111,13 @@ public class Day08_2 : HappyPuzzleBase
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static int CalculateScenicScoreInBiDirectional(ref ReadOnlySpan<int> treeHeightsForOrientation, int index, int offset)
+	private static int CalculateScenicScoreInBiDirectional(ref ReadOnlySpan<byte> treeHeightsForOrientation, int index, int offset)
 	{
 		return CalculateScenicScoreInDirection(ref treeHeightsForOrientation, index, -offset) *
 		       CalculateScenicScoreInDirection(ref treeHeightsForOrientation, index, offset);
 	}
 
-	private static int CalculateScenicScoreInDirection(ref ReadOnlySpan<int> treeHeightsForOrientation, int index, int offset)
+	private static int CalculateScenicScoreInDirection(ref ReadOnlySpan<byte> treeHeightsForOrientation, int index, int offset)
 	{
 		var heightThreshold = treeHeightsForOrientation[index];
 		index += offset;
@@ -131,7 +131,7 @@ public class Day08_2 : HappyPuzzleBase
 			       _ => throw new NotSupportedException()
 		       })
 		{
-			scenicScore ++;
+			scenicScore++;
 			var localThreeHeight = treeHeightsForOrientation[index];
 			if (localThreeHeight >= heightThreshold)
 			{
