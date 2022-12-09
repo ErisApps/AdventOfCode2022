@@ -204,7 +204,7 @@ public class Day09 : HappyPuzzleBase
 		{
 			for (var x = minX; x <= maxX; x++)
 			{
-				if ((x, y) == (0, 0))
+				if ((x, y) == (0, 0) && !positions.Contains(Vector2.Zero) )
 				{
 					textWriter.Write("S");
 					continue;
@@ -214,7 +214,7 @@ public class Day09 : HappyPuzzleBase
 				var indexOf = Array.IndexOf(positions, position);
 
 				textWriter.Write(indexOf != -1
-					? indexOf
+					? indexOf == 0 ? "H" : indexOf
 					: ".");
 			}
 
