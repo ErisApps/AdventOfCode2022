@@ -1,4 +1,3 @@
-using System.Buffers;
 using AdventOfCode2022.Shared;
 
 namespace AdventOfCode2022.Puzzles;
@@ -14,11 +13,10 @@ public class Day06 : HappyPuzzleBase
 		var dataStreamSpan = File.ReadAllText(AssetPath()).AsSpan();
 
 		var i = 0;
-		var buffer = new char[markerSize];
 		do
 		{
-			dataStreamSpan.Slice(i, markerSize).CopyTo(buffer);
-			if (HasUniqueCharacters(buffer))
+			var bufferAsSpan = dataStreamSpan.Slice(i, markerSize);
+			if (HasUniqueCharacters(ref bufferAsSpan))
 			{
 				break;
 			}
@@ -29,7 +27,7 @@ public class Day06 : HappyPuzzleBase
 		return i + markerSize;
 	}
 
-	private static bool HasUniqueCharacters(char[] input)
+	private static bool HasUniqueCharacters(ref ReadOnlySpan<char> input)
 	{
 		for (var i = 0; i < input.Length; i++)
 		for (var j = i + 1; j < input.Length; j++)
