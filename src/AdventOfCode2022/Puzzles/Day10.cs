@@ -72,7 +72,7 @@ public class Day10 : HappyPuzzleBase
 			var drawBufferIndex = clockCycle - 1 + delimiterOffset;
 			drawBuffer[drawBufferIndex] = shouldLightUpPixel ? '#' : '.';
 
-			if ((drawBufferIndex + 1 - delimiterOffset) % crtWidth == 0)
+			if (clockCycle % crtWidth == 0)
 			{
 				drawBuffer[drawBufferIndex + 1] = '\n';
 			}
