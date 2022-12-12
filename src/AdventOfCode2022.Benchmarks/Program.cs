@@ -10,3 +10,5 @@ var benchmarkCases = HappyPuzzleHelpers
 	.ToArray();
 
 BenchmarkRunner.Run(benchmarkCases);
+
+// BenchmarkRunner.Run(new[] { typeof(SingleCharIntParserBenchmark)/*, typeof(DualCharIntParserBenchmark), typeof(VariableCharIntParserBenchmark)*/ });
