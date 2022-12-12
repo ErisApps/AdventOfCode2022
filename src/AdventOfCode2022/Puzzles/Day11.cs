@@ -41,15 +41,24 @@ public class Day11 : HappyPuzzleBase
 		ref Span<int> itemWorryLevels,
 		ref Span<int> monkeyItemHolder)
 	{
-		var lineIndex = 0;
+		var rawLineIndex = 0;
+		var itemFillIndex = 0;
 		do
 		{
-			var monkeyId = SingleCharIntParser(monkeyDescriptorsRaw[lineIndex++][7]);
+			var monkeyId = SingleCharIntParser(monkeyDescriptorsRaw[rawLineIndex++][7]);
 
-			var startingItemsDescriptorSpan = monkeyDescriptorsRaw[lineIndex++].AsSpan()[18..];
-			// TODO: Parse starting items
+			var startingItemsDescriptorSpan = monkeyDescriptorsRaw[rawLineIndex++].AsSpan()[18..];
+			ref var monkeyRealTimeInfo = ref monkeyRealTimeInfoDescriptors[monkeyId];
+			for (var i = 0; i < startingItemsDescriptorSpan.Length; i += 4)
+			{
+				itemWorryLevels[itemFillIndex] = DualCharIntParser(startingItemsDescriptorSpan[i], startingItemsDescriptorSpan[i + 1]);
+				monkeyItemHolder[itemFillIndex] = monkeyId;
 
-			var operationDescriptorSpan = monkeyDescriptorsRaw[lineIndex++].AsSpan()[23..];
+				monkeyRealTimeInfo.HoldCount++;
+				itemFillIndex++;
+			}
+
+			var operationDescriptorSpan = monkeyDescriptorsRaw[rawLineIndex++].AsSpan()[23..];
 			var monkeyOperation = operationDescriptorSpan[0] switch
 			{
 				'+' => Operation.Add,
@@ -68,16 +77,16 @@ public class Day11 : HappyPuzzleBase
 				monkeyOperand = SpecializedCaedenIntParser(ref monkeyOperandDescriptorSpan);
 			}
 
-			var testOperandSpan = monkeyDescriptorsRaw[lineIndex++].AsSpan()[21..];
+			var testOperandSpan = monkeyDescriptorsRaw[rawLineIndex++].AsSpan()[21..];
 			var monkeyTestOperand = SpecializedCaedenIntParser(ref testOperandSpan);
 
-			var trueMonkeyTarget = SingleCharIntParser(monkeyDescriptorsRaw[lineIndex++][29]);
-			var falseMonkeyTarget = SingleCharIntParser(monkeyDescriptorsRaw[lineIndex++][30]);
+			var trueMonkeyTarget = SingleCharIntParser(monkeyDescriptorsRaw[rawLineIndex++][29]);
+			var falseMonkeyTarget = SingleCharIntParser(monkeyDescriptorsRaw[rawLineIndex++][30]);
 
 			monkeyDescriptors[monkeyId] = new MonkeyDescriptor(monkeyOperation, monkeyOperand, monkeyTestOperand, trueMonkeyTarget, falseMonkeyTarget);
 
-			lineIndex++;
-		} while (lineIndex < monkeyDescriptorsRaw.Length);
+			rawLineIndex++;
+		} while (rawLineIndex < monkeyDescriptorsRaw.Length);
 	}
 
 	public override object SolvePart2()
@@ -118,6 +127,8 @@ public class Day11 : HappyPuzzleBase
 
 	private struct MonkeyRealTimeInformation
 	{
+		public int InspectedCount { get; set; }
+		public int HoldCount { get; set; }
 	}
 
 	private enum Operation
