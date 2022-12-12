@@ -21,6 +21,7 @@ public class Day11 : HappyPuzzleBase
 
 		ParseInput(monkeyDescriptorsRaw, ref monkeyDescriptors, ref monkeyRealTimeInfo, ref itemWorryLevels, ref monkeyItemHolder);
 
+		DoMonkeyStoofs(ref monkeyDescriptors, ref monkeyRealTimeInfo, ref itemWorryLevels, ref monkeyItemHolder);
 		throw new NotImplementedException();
 	}
 
@@ -87,6 +88,55 @@ public class Day11 : HappyPuzzleBase
 
 			rawLineIndex++;
 		} while (rawLineIndex < monkeyDescriptorsRaw.Length);
+	}
+
+	private static void DoMonkeyStoofs(ref Span<MonkeyDescriptor> monkeyDescriptors,
+		ref Span<MonkeyRealTimeInformation> monkeyRealTimeInfoDescriptors,
+		ref Span<int> itemWorryLevels,
+		ref Span<int> monkeyItemHolderInfos)
+	{
+		for (var round = 0; round < 20; round++)
+		{
+			for (var monkeyIndex = 0; monkeyIndex < monkeyDescriptors.Length; monkeyIndex++)
+			{
+				ref var monkeyRealTimeInfo = ref monkeyRealTimeInfoDescriptors[monkeyIndex];
+				if (monkeyRealTimeInfo.HoldCount == 0)
+				{
+					continue;
+				}
+
+				ref var monkeyDescriptor = ref monkeyDescriptors[monkeyIndex];
+
+				for (var monkeyItemHolderIndex = 0; monkeyItemHolderIndex < monkeyItemHolderInfos.Length; monkeyItemHolderIndex++)
+				{
+					ref var monkeyItemHolder = ref monkeyItemHolderInfos[monkeyItemHolderIndex];
+					if (monkeyItemHolder != monkeyIndex)
+					{
+						continue;
+					}
+
+					ref var itemWorryLevel = ref itemWorryLevels[monkeyItemHolderIndex];
+					itemWorryLevel = monkeyDescriptor.Operation switch
+					{
+						Operation.Add => itemWorryLevel + monkeyDescriptor.Operand,
+						Operation.Multiply => itemWorryLevel * monkeyDescriptor.Operand,
+						Operation.Squared => itemWorryLevel * itemWorryLevel,
+						_ => throw new UnreachableException("Bonk!")
+					};
+
+					itemWorryLevel /= 3;
+
+					monkeyItemHolder = itemWorryLevel % monkeyDescriptor.TestOperand == 0
+						? monkeyDescriptor.TrueTargetMonkey
+						: monkeyDescriptor.FalseTargetMonkey;
+
+					monkeyRealTimeInfoDescriptors[monkeyItemHolder].HoldCount++;
+					monkeyRealTimeInfo.HoldCount--;
+
+					monkeyRealTimeInfo.InspectedCount++;
+				}
+			}
+		}
 	}
 
 	public override object SolvePart2()
