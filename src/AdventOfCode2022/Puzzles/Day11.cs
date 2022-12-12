@@ -7,7 +7,11 @@ public class Day11 : HappyPuzzleBase
 {
 	private const int MONKEY_DESCRIPTORS_LINE_COUNT = 7;
 
-	public override object SolvePart1()
+	public override object SolvePart1() => SolveInternal(20, 3);
+
+	public override object SolvePart2() => SolveInternal(10_000, 1);
+
+	private long SolveInternal(int rounds, int calmingEffectFactor)
 	{
 		ReadOnlySpan<string> monkeyDescriptorsRaw = File.ReadAllLines(AssetPath());
 
@@ -16,12 +20,12 @@ public class Day11 : HappyPuzzleBase
 		Span<MonkeyRealTimeInformation> monkeyRealTimeInfo = stackalloc MonkeyRealTimeInformation[monkeyCount];
 
 		var itemCount = CalculateItemStoofs(monkeyDescriptorsRaw);
-		Span<int> itemWorryLevels = stackalloc int[itemCount];
+		Span<long> itemWorryLevels = stackalloc long[itemCount];
 		Span<int> monkeyItemHolder = stackalloc int[itemCount];
 
 		ParseInput(monkeyDescriptorsRaw, ref monkeyDescriptors, ref monkeyRealTimeInfo, ref itemWorryLevels, ref monkeyItemHolder);
 
-		DoMonkeyStoofs(ref monkeyDescriptors, ref monkeyRealTimeInfo, ref itemWorryLevels, ref monkeyItemHolder);
+		DoMonkeyStoofs(ref monkeyDescriptors, ref monkeyRealTimeInfo, ref itemWorryLevels, ref monkeyItemHolder, rounds, calmingEffectFactor);
 
 		return Multiply2LargestNumbers(ref monkeyRealTimeInfo);
 	}
@@ -40,7 +44,7 @@ public class Day11 : HappyPuzzleBase
 	private static void ParseInput(ReadOnlySpan<string> monkeyDescriptorsRaw,
 		ref Span<MonkeyDescriptor> monkeyDescriptors,
 		ref Span<MonkeyRealTimeInformation> monkeyRealTimeInfoDescriptors,
-		ref Span<int> itemWorryLevels,
+		ref Span<long> itemWorryLevels,
 		ref Span<int> monkeyItemHolder)
 	{
 		var rawLineIndex = 0;
@@ -93,10 +97,18 @@ public class Day11 : HappyPuzzleBase
 
 	private static void DoMonkeyStoofs(ref Span<MonkeyDescriptor> monkeyDescriptors,
 		ref Span<MonkeyRealTimeInformation> monkeyRealTimeInfoDescriptors,
-		ref Span<int> itemWorryLevels,
-		ref Span<int> monkeyItemHolderInfos)
+		ref Span<long> itemWorryLevels,
+		ref Span<int> monkeyItemHolderInfos,
+		int rounds,
+		int calmingEffectFactor)
 	{
-		for (var round = 0; round < 20; round++)
+		var largestCommonMultiple = 1;
+		for (var i = 0; i < monkeyDescriptors.Length; i++)
+		{
+			largestCommonMultiple *= monkeyDescriptors[i].TestOperand;
+		}
+
+		for (var round = 0; round < rounds; round++)
 		{
 			for (var monkeyIndex = 0; monkeyIndex < monkeyDescriptors.Length; monkeyIndex++)
 			{
@@ -125,7 +137,14 @@ public class Day11 : HappyPuzzleBase
 						_ => throw new UnreachableException("Bonk!")
 					};
 
-					itemWorryLevel /= 3;
+					if (calmingEffectFactor > 1)
+					{
+						itemWorryLevel /= calmingEffectFactor;
+					}
+					else
+					{
+						itemWorryLevel %= largestCommonMultiple;
+					}
 
 					monkeyItemHolder = itemWorryLevel % monkeyDescriptor.TestOperand == 0
 						? monkeyDescriptor.TrueTargetMonkey
@@ -140,7 +159,7 @@ public class Day11 : HappyPuzzleBase
 		}
 	}
 
-	private static int Multiply2LargestNumbers(ref Span<MonkeyRealTimeInformation> monkeyRealTimeInfos)
+	private static long Multiply2LargestNumbers(ref Span<MonkeyRealTimeInformation> monkeyRealTimeInfos)
 	{
 		var largest = 0;
 		var secondLargest = 0;
@@ -159,12 +178,7 @@ public class Day11 : HappyPuzzleBase
 			}
 		}
 
-		return largest * secondLargest;
-	}
-
-	public override object SolvePart2()
-	{
-		throw new NotImplementedException();
+		return (long) largest * secondLargest;
 	}
 
 	private static int SpecializedCaedenIntParser(ref ReadOnlySpan<char> span)
