@@ -44,8 +44,7 @@ public class Day11 : HappyPuzzleBase
 		var lineIndex = 0;
 		do
 		{
-			var monkeyIdDescriptorSpan = monkeyDescriptorsRaw[lineIndex++].AsSpan()[7..^1];
-			var monkeyId = SpecializedCaedenIntParser(ref monkeyIdDescriptorSpan);
+			var monkeyId = SingleCharIntParser(monkeyDescriptorsRaw[lineIndex++][7]);
 
 			var startingItemsDescriptorSpan = monkeyDescriptorsRaw[lineIndex++].AsSpan()[18..];
 			// TODO: Parse starting items
@@ -72,11 +71,8 @@ public class Day11 : HappyPuzzleBase
 			var testOperandSpan = monkeyDescriptorsRaw[lineIndex++].AsSpan()[21..];
 			var monkeyTestOperand = SpecializedCaedenIntParser(ref testOperandSpan);
 
-			var trueResultMonkeyTargetDescriptorSpan = monkeyDescriptorsRaw[lineIndex++].AsSpan()[29..];
-			var trueMonkeyTarget = SpecializedCaedenIntParser(ref trueResultMonkeyTargetDescriptorSpan);
-
-			var falseResultMonkeyTargetDescriptorSpan = monkeyDescriptorsRaw[lineIndex++].AsSpan()[30..];
-			var falseMonkeyTarget = SpecializedCaedenIntParser(ref falseResultMonkeyTargetDescriptorSpan);
+			var trueMonkeyTarget = SingleCharIntParser(monkeyDescriptorsRaw[lineIndex++][29]);
+			var falseMonkeyTarget = SingleCharIntParser(monkeyDescriptorsRaw[lineIndex++][30]);
 
 			monkeyDescriptors[monkeyId] = new MonkeyDescriptor(monkeyOperation, monkeyOperand, monkeyTestOperand, trueMonkeyTarget, falseMonkeyTarget);
 
