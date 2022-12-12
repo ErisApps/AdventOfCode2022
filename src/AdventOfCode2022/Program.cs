@@ -5,7 +5,7 @@ using AdventOfCode2022.Shared;
 Console.WriteLine("Hello, World!");
 
 var puzzleInstances = HappyPuzzleHelpers
-	.DiscoverPuzzles()
+	.DiscoverPuzzles(true)
 	.Select(x => (HappyPuzzleBase) Activator.CreateInstance(x)!)
 	.ToList();
 
