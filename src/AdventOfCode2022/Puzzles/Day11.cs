@@ -15,7 +15,7 @@ public class Day11 : HappyPuzzleBase
 		Span<MonkeyDescriptor> monkeyDescriptors = stackalloc MonkeyDescriptor[monkeyCount];
 		Span<MonkeyRealTimeInformation> monkeyRealTimeInfo = stackalloc MonkeyRealTimeInformation[monkeyCount];
 
-		var itemCount = CalculateItemStoofs(monkeyDescriptorsRaw, monkeyCount);
+		var itemCount = CalculateItemStoofs(monkeyDescriptorsRaw);
 		Span<int> itemWorryLevels = stackalloc int[itemCount];
 		Span<int> monkeyItemHolder = stackalloc int[itemCount];
 
@@ -24,10 +24,10 @@ public class Day11 : HappyPuzzleBase
 		throw new NotImplementedException();
 	}
 
-	private static int CalculateItemStoofs(ReadOnlySpan<string> monkeyDescriptorsRaw, int monkeyCount)
+	private static int CalculateItemStoofs(ReadOnlySpan<string> monkeyDescriptorsRaw)
 	{
 		var totalItemCount = 0;
-		for (var itemsIndex = 0; itemsIndex < monkeyDescriptorsRaw.Length; itemsIndex += monkeyCount)
+		for (var itemsIndex = 1; itemsIndex < monkeyDescriptorsRaw.Length; itemsIndex += MONKEY_DESCRIPTORS_LINE_COUNT)
 		{
 			totalItemCount += (monkeyDescriptorsRaw[itemsIndex].Length - 18 + 2) / 4;
 		}
