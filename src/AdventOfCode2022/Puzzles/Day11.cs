@@ -22,7 +22,8 @@ public class Day11 : HappyPuzzleBase
 		ParseInput(monkeyDescriptorsRaw, ref monkeyDescriptors, ref monkeyRealTimeInfo, ref itemWorryLevels, ref monkeyItemHolder);
 
 		DoMonkeyStoofs(ref monkeyDescriptors, ref monkeyRealTimeInfo, ref itemWorryLevels, ref monkeyItemHolder);
-		throw new NotImplementedException();
+
+		return Multiply2LargestNumbers(ref monkeyRealTimeInfo);
 	}
 
 	private static int CalculateItemStoofs(ReadOnlySpan<string> monkeyDescriptorsRaw)
@@ -137,6 +138,28 @@ public class Day11 : HappyPuzzleBase
 				}
 			}
 		}
+	}
+
+	private static int Multiply2LargestNumbers(ref Span<MonkeyRealTimeInformation> monkeyRealTimeInfos)
+	{
+		var largest = 0;
+		var secondLargest = 0;
+
+		foreach (var monkeyRealTimeInfo in monkeyRealTimeInfos)
+		{
+			var inspectionCount = monkeyRealTimeInfo.InspectedCount;
+			if (inspectionCount > largest)
+			{
+				secondLargest = largest;
+				largest = inspectionCount;
+			}
+			else if (inspectionCount > secondLargest)
+			{
+				secondLargest = inspectionCount;
+			}
+		}
+
+		return largest * secondLargest;
 	}
 
 	public override object SolvePart2()
