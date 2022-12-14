@@ -61,9 +61,6 @@ public class Day12 : HappyPuzzleBase
 		// Indicates whether a given index has already been visited
 		Span<bool> terrainVisitedData = stackalloc bool[terrainSize];
 
-		// Purely for debugging
-		Span<int> terrainStepData = stackalloc int[terrainSize];
-
 		// Initialize the first waveSearchBuffer with the starting index
 		waveSearchBuffer[waveSearchBufferSize++] = startingIndex;
 		terrainVisitedData[startingIndex] = true;
@@ -94,8 +91,6 @@ public class Day12 : HappyPuzzleBase
 							return currentWaveStep;
 						}
 
-						terrainStepData[topIndex] = currentWaveStep;
-
 						terrainVisitedData[topIndex] = true;
 						nextWaveSearchBuffer[nextWaveSearchBufferSize++] = topIndex;
 					}
@@ -113,8 +108,6 @@ public class Day12 : HappyPuzzleBase
 						{
 							return currentWaveStep;
 						}
-
-						terrainStepData[bottomIndex] = currentWaveStep;
 
 						terrainVisitedData[bottomIndex] = true;
 						nextWaveSearchBuffer[nextWaveSearchBufferSize++] = bottomIndex;
@@ -134,8 +127,6 @@ public class Day12 : HappyPuzzleBase
 							return currentWaveStep;
 						}
 
-						terrainStepData[leftIndex] = currentWaveStep;
-
 						terrainVisitedData[leftIndex] = true;
 						nextWaveSearchBuffer[nextWaveSearchBufferSize++] = leftIndex;
 					}
@@ -153,8 +144,6 @@ public class Day12 : HappyPuzzleBase
 						{
 							return currentWaveStep;
 						}
-
-						terrainStepData[rightIndex] = currentWaveStep;
 
 						terrainVisitedData[rightIndex] = true;
 						nextWaveSearchBuffer[nextWaveSearchBufferSize++] = rightIndex;
@@ -179,23 +168,4 @@ public class Day12 : HappyPuzzleBase
 			'E' => ('z' + 1),
 			_ => terrainValue
 		};
-
-	private static void WriteDebugData(ref Span<int> heightMapData, int terrainWidth, int terrainHeight)
-	{
-		var debugOutputFolderPath = Path.Combine(Environment.CurrentDirectory, "Debug");
-		if (Directory.Exists(debugOutputFolderPath))
-		{
-			Directory.Delete(debugOutputFolderPath, true);
-		}
-
-		Directory.CreateDirectory(debugOutputFolderPath);
-
-		using var fileStream = File.Create(Path.Combine(debugOutputFolderPath, "day12.txt"));
-		using var streamWriter = new StreamWriter(fileStream);
-
-		for (var i = 0; i < terrainHeight; i++)
-		{
-			streamWriter.WriteLine(heightMapData.Slice(i * terrainHeight, terrainWidth).ToArray().ToString());
-		}
-	}
 }
