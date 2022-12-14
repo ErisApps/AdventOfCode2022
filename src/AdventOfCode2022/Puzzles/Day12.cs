@@ -11,9 +11,9 @@ public class Day12 : HappyPuzzleBase
 		var terrainWidth = terrainRowDataSpans[0].Length;
 		var terrainSize = terrainHeight * terrainWidth;
 
-		var terrainData = GC.AllocateUninitializedArray<char>(terrainSize).AsSpan();
+		var terrainData = GC.AllocateUninitializedArray<int>(terrainSize).AsSpan();
 
-		var startingIndex = PrepareDataAndFindStartingIndex(ref terrainRowDataSpans, terrainHeight, terrainWidth, ref terrainData);
+		var startingIndex = PrepareDataAndFindStartingIndex(ref terrainRowDataSpans, terrainHeight, terrainWidth, ref terrainData, 'E');
 
 		return FindShortestPathDescending(ref terrainData, terrainHeight, terrainWidth, terrainSize, startingIndex, 'S');
 	}
@@ -23,7 +23,7 @@ public class Day12 : HappyPuzzleBase
 		throw new NotImplementedException();
 	}
 
-	private static int PrepareDataAndFindStartingIndex(ref ReadOnlySpan<string> terrainDataRaw, int terrainHeight, int terrainWidth, ref Span<char> terrainData)
+	private static int PrepareDataAndFindStartingIndex(ref ReadOnlySpan<string> terrainDataRaw, int terrainHeight, int terrainWidth, ref Span<int> terrainData, char startingChar)
 	{
 		var startingIndex = -1;
 		var terrainIndex = 0;
@@ -33,23 +33,23 @@ public class Day12 : HappyPuzzleBase
 			for (var columnIndex = 0; columnIndex < terrainWidth; columnIndex++)
 			{
 				var terrainValue = rawRowData[columnIndex];
-				if (terrainValue == 'E')
+				if (terrainValue == startingChar)
 				{
 					startingIndex = terrainIndex;
 				}
 
-				terrainData[terrainIndex++] = terrainValue;
+				// Rewrite the start and end points data so it's just 1 lower/higher compared to the second lowest/highest point in the map
+				terrainData[terrainIndex++] = RemapTerrainValue(terrainValue);
 			}
 		}
-
-		// Rewrite the starting point data so it's just 1 higher than the highest point in the terrain
-		terrainData[startingIndex] = (char) (1 + 'z');
 
 		return startingIndex;
 	}
 
-	private static int FindShortestPathDescending(ref Span<char> terrainData, int terrainHeight, int terrainWidth, int terrainSize, int startingIndex, char endingChar)
+	private static int FindShortestPathDescending(ref Span<int> terrainData, int terrainHeight, int terrainWidth, int terrainSize, int startingIndex, char endingChar)
 	{
+		var endingValue = RemapTerrainValue(endingChar);
+
 		// Queue-like stoof for BFS
 		// Contains the indexes of map tiles that need to have their neighbours searched for the current waveStep
 		var waveSearchBufferSize = 0;
@@ -87,14 +87,13 @@ public class Day12 : HappyPuzzleBase
 					var topIndex = terrainIndex - terrainWidth;
 					ref var topValue = ref terrainData[topIndex];
 
-					if (topValue == endingChar)
+					if (!terrainVisitedData[topIndex] && topValue >= declineThreshold)
 					{
-						WriteDebugData(ref terrainStepData, terrainWidth, terrainHeight);
-						return currentWaveStep;
-					}
+						if (topValue == endingValue)
+						{
+							return currentWaveStep;
+						}
 
-					if (topValue >= declineThreshold && !terrainVisitedData[topIndex])
-					{
 						terrainStepData[topIndex] = currentWaveStep;
 
 						terrainVisitedData[topIndex] = true;
@@ -108,14 +107,13 @@ public class Day12 : HappyPuzzleBase
 					var bottomIndex = terrainIndex + terrainWidth;
 					ref var bottomValue = ref terrainData[bottomIndex];
 
-					if (bottomValue == endingChar)
+					if (!terrainVisitedData[bottomIndex] && bottomValue >= declineThreshold)
 					{
-						WriteDebugData(ref terrainStepData, terrainWidth, terrainHeight);
-						return currentWaveStep;
-					}
+						if (bottomValue == endingValue)
+						{
+							return currentWaveStep;
+						}
 
-					if (bottomValue >= declineThreshold && !terrainVisitedData[bottomIndex])
-					{
 						terrainStepData[bottomIndex] = currentWaveStep;
 
 						terrainVisitedData[bottomIndex] = true;
@@ -129,14 +127,13 @@ public class Day12 : HappyPuzzleBase
 					var leftIndex = terrainIndex - 1;
 					ref var leftValue = ref terrainData[leftIndex];
 
-					if (leftValue == endingChar)
+					if (!terrainVisitedData[leftIndex] && leftValue >= declineThreshold)
 					{
-						WriteDebugData(ref terrainStepData, terrainWidth, terrainHeight);
-						return currentWaveStep;
-					}
+						if (leftValue == endingValue)
+						{
+							return currentWaveStep;
+						}
 
-					if (leftValue >= declineThreshold && !terrainVisitedData[leftIndex])
-					{
 						terrainStepData[leftIndex] = currentWaveStep;
 
 						terrainVisitedData[leftIndex] = true;
@@ -150,14 +147,13 @@ public class Day12 : HappyPuzzleBase
 					var rightIndex = terrainIndex + 1;
 					ref var rightValue = ref terrainData[rightIndex];
 
-					if (rightValue == endingChar)
+					if (!terrainVisitedData[rightIndex] && rightValue >= declineThreshold)
 					{
-						WriteDebugData(ref terrainStepData, terrainWidth, terrainHeight);
-						return currentWaveStep;
-					}
+						if (rightValue == endingValue)
+						{
+							return currentWaveStep;
+						}
 
-					if (rightValue >= declineThreshold && !terrainVisitedData[rightIndex])
-					{
 						terrainStepData[rightIndex] = currentWaveStep;
 
 						terrainVisitedData[rightIndex] = true;
@@ -176,6 +172,13 @@ public class Day12 : HappyPuzzleBase
 			nextWaveSearchBufferSize = 0;
 		}
 	}
+
+	private static int RemapTerrainValue(char terrainValue) => terrainValue switch
+		{
+			'S' => ('a' - 1),
+			'E' => ('z' + 1),
+			_ => terrainValue
+		};
 
 	private static void WriteDebugData(ref Span<int> heightMapData, int terrainWidth, int terrainHeight)
 	{
