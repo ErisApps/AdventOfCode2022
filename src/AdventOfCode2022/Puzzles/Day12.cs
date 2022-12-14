@@ -11,11 +11,12 @@ public class Day12 : HappyPuzzleBase
 		var terrainWidth = terrainRowDataSpans[0].Length;
 		var terrainSize = terrainHeight * terrainWidth;
 
-		var terrainData = GC.AllocateUninitializedArray<int>(terrainSize).AsSpan();
+		// var terrainData = GC.AllocateUninitializedArray<int>(terrainSize).AsSpan();
+		Span<int> terrainData = stackalloc int[terrainSize];
 
-		var startingIndex = PrepareDataAndFindStartingIndex(ref terrainRowDataSpans, terrainHeight, terrainWidth, ref terrainData, 'E');
+		var startingIndex = PrepareDataAndFindStartingIndex(ref terrainRowDataSpans, terrainHeight, terrainWidth, terrainData, 'E');
 
-		return FindShortestPathDescending(ref terrainData, terrainHeight, terrainWidth, terrainSize, startingIndex, 'S');
+		return FindShortestPathDescending(terrainData, terrainHeight, terrainWidth, terrainSize, startingIndex, 'S');
 	}
 
 	public override object SolvePart2()
@@ -25,14 +26,15 @@ public class Day12 : HappyPuzzleBase
 		var terrainWidth = terrainRowDataSpans[0].Length;
 		var terrainSize = terrainHeight * terrainWidth;
 
-		var terrainData = GC.AllocateUninitializedArray<int>(terrainSize).AsSpan();
+		// var terrainData = GC.AllocateUninitializedArray<int>(terrainSize).AsSpan();
+		Span<int> terrainData = stackalloc int[terrainSize];
 
-		var startingIndex = PrepareDataAndFindStartingIndex(ref terrainRowDataSpans, terrainHeight, terrainWidth, ref terrainData, 'E');
+		var startingIndex = PrepareDataAndFindStartingIndex(ref terrainRowDataSpans, terrainHeight, terrainWidth, terrainData, 'E');
 
-		return FindShortestPathDescending(ref terrainData, terrainHeight, terrainWidth, terrainSize, startingIndex, 'a');
+		return FindShortestPathDescending(terrainData, terrainHeight, terrainWidth, terrainSize, startingIndex, 'a');
 	}
 
-	private static int PrepareDataAndFindStartingIndex(ref ReadOnlySpan<string> terrainDataRaw, int terrainHeight, int terrainWidth, ref Span<int> terrainData, char startingChar)
+	private static int PrepareDataAndFindStartingIndex(ref ReadOnlySpan<string> terrainDataRaw, int terrainHeight, int terrainWidth, scoped Span<int> terrainData, char startingChar)
 	{
 		var startingIndex = -1;
 		var terrainIndex = 0;
@@ -55,7 +57,7 @@ public class Day12 : HappyPuzzleBase
 		return startingIndex;
 	}
 
-	private static int FindShortestPathDescending(ref Span<int> terrainData, int terrainHeight, int terrainWidth, int terrainSize, int startingIndex, char endingChar)
+	private static int FindShortestPathDescending(ReadOnlySpan<int> terrainData, int terrainHeight, int terrainWidth, int terrainSize, int startingIndex, char endingChar)
 	{
 		var endingValue = RemapTerrainValue(endingChar);
 
@@ -88,14 +90,14 @@ public class Day12 : HappyPuzzleBase
 				var terrainRow = terrainIndex / terrainWidth;
 				var terrainColumn = terrainIndex % terrainWidth;
 
-				ref var terrainValue = ref terrainData[terrainIndex];
+				var terrainValue = terrainData[terrainIndex];
 				var declineThreshold = terrainValue - 1;
 
 				// Check top
 				if (terrainRow > 0)
 				{
 					var topIndex = terrainIndex - terrainWidth;
-					ref var topValue = ref terrainData[topIndex];
+					var topValue = terrainData[topIndex];
 
 					if (!terrainVisitedData[topIndex] && topValue >= declineThreshold)
 					{
@@ -113,7 +115,7 @@ public class Day12 : HappyPuzzleBase
 				if (terrainRow < terrainHeight - 1)
 				{
 					var bottomIndex = terrainIndex + terrainWidth;
-					ref var bottomValue = ref terrainData[bottomIndex];
+					var bottomValue = terrainData[bottomIndex];
 
 					if (!terrainVisitedData[bottomIndex] && bottomValue >= declineThreshold)
 					{
@@ -131,7 +133,7 @@ public class Day12 : HappyPuzzleBase
 				if (terrainColumn > 0)
 				{
 					var leftIndex = terrainIndex - 1;
-					ref var leftValue = ref terrainData[leftIndex];
+					var leftValue = terrainData[leftIndex];
 
 					if (!terrainVisitedData[leftIndex] && leftValue >= declineThreshold)
 					{
@@ -149,7 +151,7 @@ public class Day12 : HappyPuzzleBase
 				if (terrainColumn < terrainWidth - 1)
 				{
 					var rightIndex = terrainIndex + 1;
-					ref var rightValue = ref terrainData[rightIndex];
+					var rightValue = terrainData[rightIndex];
 
 					if (!terrainVisitedData[rightIndex] && rightValue >= declineThreshold)
 					{
@@ -176,9 +178,9 @@ public class Day12 : HappyPuzzleBase
 	}
 
 	private static int RemapTerrainValue(char terrainValue) => terrainValue switch
-		{
-			'S' => 'a' - 1, // Start point is supposedly equal to a, but bc the algo searches from highest to lowest, we need to make it lower than the lowest point
-			'E' => 'z', // End point height is equal to z
-			_ => terrainValue
-		};
+	{
+		'S' => 'a' - 1, // Start point is supposedly equal to a, but bc the algo searches from highest to lowest, we need to make it lower than the lowest point
+		'E' => 'z', // End point height is equal to z
+		_ => terrainValue
+	};
 }
