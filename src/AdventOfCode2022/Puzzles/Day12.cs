@@ -59,13 +59,17 @@ public class Day12 : HappyPuzzleBase
 	{
 		var endingValue = RemapTerrainValue(endingChar);
 
+		// According to actual testing against the puzzle input, 19 should be enough to reach the end
+		// But given that the input is not guaranteed to be solvable within that buffer size, we'll use a much higher value
+		var waveSearchBufferMaxSize = terrainHeight * 2 + terrainWidth * 2;
+
 		// Queue-like stoof for BFS
 		// Contains the indexes of map tiles that need to have their neighbours searched for the current waveStep
 		var waveSearchBufferSize = 0;
-		Span<int> waveSearchBuffer = stackalloc int[terrainSize];
+		Span<int> waveSearchBuffer = stackalloc int[waveSearchBufferMaxSize];
 		// Placeholder buffer for the next waveStep round checks
 		var nextWaveSearchBufferSize = 0;
-		Span<int> nextWaveSearchBuffer = stackalloc int[terrainSize];
+		Span<int> nextWaveSearchBuffer = stackalloc int[waveSearchBufferMaxSize];
 
 		// Indicates whether a given index has already been visited
 		Span<bool> terrainVisitedData = stackalloc bool[terrainSize];
