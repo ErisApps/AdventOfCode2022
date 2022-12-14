@@ -20,7 +20,16 @@ public class Day12 : HappyPuzzleBase
 
 	public override object SolvePart2()
 	{
-		throw new NotImplementedException();
+		ReadOnlySpan<string> terrainRowDataSpans = File.ReadAllLines(AssetPath());
+		var terrainHeight = terrainRowDataSpans.Length;
+		var terrainWidth = terrainRowDataSpans[0].Length;
+		var terrainSize = terrainHeight * terrainWidth;
+
+		var terrainData = GC.AllocateUninitializedArray<int>(terrainSize).AsSpan();
+
+		var startingIndex = PrepareDataAndFindStartingIndex(ref terrainRowDataSpans, terrainHeight, terrainWidth, ref terrainData, 'E');
+
+		return FindShortestPathDescending(ref terrainData, terrainHeight, terrainWidth, terrainSize, startingIndex, 'a');
 	}
 
 	private static int PrepareDataAndFindStartingIndex(ref ReadOnlySpan<string> terrainDataRaw, int terrainHeight, int terrainWidth, ref Span<int> terrainData, char startingChar)
