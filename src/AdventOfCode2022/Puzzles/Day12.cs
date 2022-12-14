@@ -164,8 +164,8 @@ public class Day12 : HappyPuzzleBase
 
 	private static int RemapTerrainValue(char terrainValue) => terrainValue switch
 		{
-			'S' => ('a' - 1),
-			'E' => ('z' + 1),
+			'S' => 'a' - 1, // Start point is supposedly equal to a, but bc the algo searches from highest to lowest, we need to make it lower than the lowest point
+			'E' => 'z', // End point height is equal to z
 			_ => terrainValue
 		};
 }
