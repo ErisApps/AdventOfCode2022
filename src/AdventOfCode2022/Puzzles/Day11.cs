@@ -95,6 +95,7 @@ public class Day11 : HappyPuzzleBase
 		} while (rawLineIndex < monkeyDescriptorsRaw.Length);
 	}
 
+	// ReSharper disable once CognitiveComplexity
 	private static void DoMonkeyStoofs(ref Span<MonkeyDescriptor> monkeyDescriptors,
 		ref Span<MonkeyRealTimeInformation> monkeyRealTimeInfoDescriptors,
 		ref Span<long> itemWorryLevels,
@@ -102,10 +103,15 @@ public class Day11 : HappyPuzzleBase
 		int rounds,
 		int calmingEffectFactor)
 	{
+		var utilizeGuards = calmingEffectFactor < 2;
+
 		var largestCommonMultiple = 1;
-		for (var i = 0; i < monkeyDescriptors.Length; i++)
+		if (utilizeGuards)
 		{
-			largestCommonMultiple *= monkeyDescriptors[i].TestOperand;
+			for (var i = 0; i < monkeyDescriptors.Length; i++)
+			{
+				largestCommonMultiple *= monkeyDescriptors[i].TestOperand;
+			}
 		}
 
 		for (var round = 0; round < rounds; round++)
@@ -137,13 +143,13 @@ public class Day11 : HappyPuzzleBase
 						_ => throw new UnreachableException("Bonk!")
 					};
 
-					if (calmingEffectFactor > 1)
+					if (utilizeGuards)
 					{
-						itemWorryLevel /= calmingEffectFactor;
+						itemWorryLevel %= largestCommonMultiple;
 					}
 					else
 					{
-						itemWorryLevel %= largestCommonMultiple;
+						itemWorryLevel /= calmingEffectFactor;
 					}
 
 					monkeyItemHolder = itemWorryLevel % monkeyDescriptor.TestOperand == 0
