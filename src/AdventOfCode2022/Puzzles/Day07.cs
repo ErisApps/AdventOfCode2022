@@ -126,7 +126,6 @@ public class Day07 : HappyPuzzleBase
 				? new FolderObject { Name = fileSystemObjectParts[1], Parent = current }
 				: new FileObject
 				{
-					Name = fileSystemObjectParts[1],
 					Size = int.Parse(fileSystemObjectParts[0])
 				});
 			index++;
@@ -139,21 +138,19 @@ public class Day07 : HappyPuzzleBase
 
 	private class FileObject : IFileSystemObject
 	{
-		public string Name { get; init; }
 		public long Size { get; init; }
 	}
 
 	private class FolderObject : IFileSystemObject
 	{
-		public string Name { get; init; }
+		public required string Name { get; init; }
 		public long Size => ChildObjects.Sum(x => x.Size);
-		public FolderObject Parent { get; init; }
+		public FolderObject? Parent { get; init; }
 		public List<IFileSystemObject> ChildObjects { get; } = new();
 	}
 
 	private interface IFileSystemObject
 	{
-		string Name { get; init; }
 		long Size { get; }
 	}
 }
