@@ -9,53 +9,62 @@ public class Day15 : HappyPuzzleBase
 	private const int SENSOR_AT_OFFSET = 12;
 	private const int CLOSEST_BEACON_OFFSET = 25;
 
-	private const int ROW_TO_CHECK_AGAINST = 2000000;
-
 	public override object SolvePart1()
 	{
+		const int rowToCheckAgainst = 2000000;
+
 		ReadOnlySpan<string> sensorReports = File.ReadAllLines(AssetPath());
 
-		var sensorReportsCoordinateBufferSize = sensorReports.Length * 3;
-		Span<Vector2> sensorReportsCoordinateBuffer = stackalloc Vector2[sensorReportsCoordinateBufferSize];
+		var sensorReportsCoordinateBufferSize = sensorReports.Length * 2;
+		Span<Coordinate> sensorReportsCoordinateBuffer = stackalloc Coordinate[sensorReportsCoordinateBufferSize];
+		Span<int> sensorReportsCoordinateDistanceBuffer = stackalloc int[sensorReports.Length];
 
-		PrepareSensorReportsCoordinateBuffer(ref sensorReports, sensorReportsCoordinateBuffer, out var minX, out var maxX, out _, out _);
+		PrepareSensorReportsCoordinateBuffer(ref sensorReports, sensorReportsCoordinateBuffer, sensorReportsCoordinateDistanceBuffer);
 
-		var xOffset = -4 * minX;
-		var mapWidth = 4 * maxX + xOffset + 1;
-		var sensorRowData = new bool[mapWidth];
+		Span<CoordinateRange> sensorRowData = stackalloc CoordinateRange[sensorReports.Length];
+		HashSet<Coordinate> uniqueBeaconCoordinatesForRow = new();
 
-		for (var i = 0; i < sensorReportsCoordinateBuffer.Length; i += 4)
+		var sensorRowDataIndex = 0;
+		for (var i = 0; i < sensorReports.Length; i++)
 		{
-			var slice = sensorReportsCoordinateBuffer.Slice(i, 4);
+			var coordinatesSlice = sensorReportsCoordinateBuffer.Slice(i * 2, 2);
+			var sensorCoordinate = coordinatesSlice[0];
 
-			var xSensor = slice[0];
-			var ySensor = slice[1];
+			var beaconCoordinate = coordinatesSlice[1];
+			if (beaconCoordinate.Y == rowToCheckAgainst)
+			{
+				uniqueBeaconCoordinatesForRow.Add(beaconCoordinate);
+			}
 
-			var xBeacon = slice[2];
-			var yBeacon = slice[3];
+			var distanceBetweenSensorAndBeacon = sensorReportsCoordinateDistanceBuffer[i];
 
-			var distanceBetweenSensorAndBeacon = CalculateManhattenDistance(xSensor, ySensor, xBeacon, yBeacon);
-
-			var distanceToTargetRow = Math.Abs(ySensor - ROW_TO_CHECK_AGAINST);
+			var distanceToTargetRow = Math.Abs(sensorCoordinate.Y - rowToCheckAgainst);
 			var remainingDistance = distanceBetweenSensorAndBeacon - distanceToTargetRow;
 			if (remainingDistance >= 0)
 			{
-				var startingPosition = Math.Max(0, xSensor - remainingDistance + xOffset);
-				var endingPosition = Math.Min(mapWidth - 1, xSensor + remainingDistance + xOffset);
-				var length = endingPosition - startingPosition + 1;
-				sensorRowData.AsSpan().Slice(startingPosition, length).Fill(true);
+				var startingPosition = sensorCoordinate.X - remainingDistance;
+				var endingPosition = sensorCoordinate.X + remainingDistance;
+
+				sensorRowData[sensorRowDataIndex++] = new CoordinateRange(startingPosition, endingPosition);
 			}
 		}
 
-		for (var i = 2; i < sensorReportsCoordinateBuffer.Length; i += 4)
+		var ascendingXComparer = Comparer<CoordinateRange>.Create((range1, range2) => range1.StartIndex - range2.StartIndex);
+		var usedSensorRowData = sensorRowData[..sensorRowDataIndex];
+		usedSensorRowData.Sort(ascendingXComparer);
+
+		var minX = usedSensorRowData[0].StartIndex;
+
+		var maxX = int.MinValue;
+		for (var i = 0; i < usedSensorRowData.Length; i++)
 		{
-			if (sensorReportsCoordinateBuffer[i + 1] == ROW_TO_CHECK_AGAINST)
+			if (usedSensorRowData[i].EndIndex > maxX)
 			{
-				sensorRowData[sensorReportsCoordinateBuffer[i] + xOffset] = false;
+				maxX = usedSensorRowData[i].EndIndex;
 			}
 		}
 
-		return sensorRowData.Count(x => x);
+		return maxX - minX - uniqueBeaconCoordinatesForRow.Count + 1;
 	}
 
 	public override object SolvePart2()
@@ -63,40 +72,31 @@ public class Day15 : HappyPuzzleBase
 		throw new NotImplementedException();
 	}
 
-	private static void PrepareSensorReportsCoordinateBuffer(ref ReadOnlySpan<string> sensorReportsRaw, scoped Span<Vector2> sensorReportsCoordinateBuffer,
-		out int minX, out int maxX, out int minY, out int maxY)
+	private static void PrepareSensorReportsCoordinateBuffer(ref ReadOnlySpan<string> sensorReportsRaw,
+		scoped Span<Coordinate> sensorReportsCoordinateBuffer,
+		scoped Span<int> sensorReportsCoordinateDistanceBuffer)
 	{
-		minX = int.MaxValue;
-		maxX = int.MinValue;
-		minY = int.MaxValue;
-		maxY = int.MinValue;
-
 		var sensorReportsCoordinateBufferIndex = 0;
 		for (var i = 0; i < sensorReportsRaw.Length; i++)
 		{
 			var sensorReportRaw = sensorReportsRaw[i].AsSpan()[SENSOR_AT_OFFSET..];
 
-			ref var sensorCoordinate = ref sensorReportsCoordinateBuffer[sensorReportsCoordinateBufferIndex++];
-
 			var sensorReportRawTraversalIndex = 0;
+
+			ref var sensorCoordinate = ref sensorReportsCoordinateBuffer[sensorReportsCoordinateBufferIndex++];
 			ExtractAndParseCoordinate(sensorReportRaw, ref sensorReportRawTraversalIndex, ref sensorCoordinate);
 
 			sensorReportRawTraversalIndex += CLOSEST_BEACON_OFFSET;
 
 			ref var beaconCoordinate = ref sensorReportsCoordinateBuffer[sensorReportsCoordinateBufferIndex++];
-
 			ExtractAndParseCoordinate(sensorReportRaw, ref sensorReportRawTraversalIndex, ref beaconCoordinate);
 
-			ref var distanceVector = ref sensorReportsCoordinateBuffer[sensorReportsCoordinateBufferIndex++];
-
-			distanceVector = Vector2.Abs(sensorCoordinate - beaconCoordinate);
-			distanceVector = new Vector2(distanceVector.X + distanceVector.Y, 0);
+			sensorReportsCoordinateDistanceBuffer[i] = sensorCoordinate - beaconCoordinate;
 		}
 	}
 
 	private static void ExtractAndParseCoordinate(
-		ReadOnlySpan<char> sensorReportRaw, ref int sensorReportRawTraversalIndex,
-		ref Vector2 coordinate)
+		ReadOnlySpan<char> sensorReportRaw, ref int sensorReportRawTraversalIndex, ref Coordinate coordinate)
 	{
 		var startIndex = sensorReportRawTraversalIndex;
 
@@ -117,12 +117,7 @@ public class Day15 : HappyPuzzleBase
 
 		var y = SpecializedCaedenIntParser(sensorReportRaw.Slice(startIndex, sensorReportRawTraversalIndex - startIndex));
 
-		coordinate = new Vector2(x, y);
-	}
-
-	private static int CalculateManhattenDistance(int x1, int y1, int x2, int y2)
-	{
-		return Math.Abs(x1 - x2) + Math.Abs(y1 - y2);
+		coordinate = new Coordinate(x, y);
 	}
 
 	private static int SpecializedCaedenIntParser(ReadOnlySpan<char> span)
@@ -176,6 +171,50 @@ public class Day15 : HappyPuzzleBase
 			}
 
 			streamWriter.WriteLine();
+		}
+	}
+
+	private readonly struct Coordinate : IEquatable<Coordinate>
+	{
+		public readonly int X;
+		public readonly int Y;
+
+		public Coordinate(int x, int y)
+		{
+			X = x;
+			Y = y;
+		}
+
+		public static int operator -(Coordinate left, Coordinate right)
+		{
+			return Math.Abs(left.X - right.X) + Math.Abs(left.Y - right.Y);
+		}
+
+		public bool Equals(Coordinate other)
+		{
+			return X == other.X && Y == other.Y;
+		}
+
+		public override bool Equals(object? obj)
+		{
+			return obj is Coordinate other && Equals(other);
+		}
+
+		public override int GetHashCode()
+		{
+			return HashCode.Combine(X, Y);
+		}
+	}
+
+	private readonly struct CoordinateRange
+	{
+		public readonly int StartIndex;
+		public readonly int EndIndex;
+
+		public CoordinateRange(int startIndex, int endIndex)
+		{
+			StartIndex = startIndex;
+			EndIndex = endIndex;
 		}
 	}
 }
