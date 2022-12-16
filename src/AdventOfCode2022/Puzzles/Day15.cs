@@ -46,7 +46,7 @@ public class Day15 : HappyPuzzleBase
 		}
 
 		var usedSensorRowData = sensorRowData[..sensorRowDataIndex];
-		usedSensorRowData.Sort(_ascendingXComparer);
+		usedSensorRowData.Sort(CoordinateRangeAscendingXComparison);
 
 		var minX = usedSensorRowData[0].StartIndex;
 
@@ -101,7 +101,7 @@ public class Day15 : HappyPuzzleBase
 			}
 
 			var usedSensorRowData = sensorRowData[..sensorRowDataIndex];
-			usedSensorRowData.Sort(_ascendingXComparer);
+			usedSensorRowData.Sort(CoordinateRangeAscendingXComparison);
 
 			var lastX = minBound - 1;
 
@@ -234,5 +234,7 @@ public class Day15 : HappyPuzzleBase
 		}
 	}
 
-	private static Comparer<CoordinateRange> _ascendingXComparer = Comparer<CoordinateRange>.Create((range1, range2) => range1.StartIndex - range2.StartIndex);
+	// Changing this reduces allocations with more than 99%, ~214MBs for part 2 are reduced to 384B
+	private static readonly Comparison<CoordinateRange>  CoordinateRangeAscendingXComparison = (r1, r2) => r1.StartIndex - r2.StartIndex;
+	// private static readonly Comparer<CoordinateRange> CoordinateRangeAscendingXComparer = Comparer<CoordinateRange>.Create((range1, range2) => range1.StartIndex - range2.StartIndex);
 }
