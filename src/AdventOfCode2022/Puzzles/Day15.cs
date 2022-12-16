@@ -15,8 +15,8 @@ public class Day15 : HappyPuzzleBase
 	{
 		ReadOnlySpan<string> sensorReports = File.ReadAllLines(AssetPath());
 
-		var sensorReportsCoordinateBufferSize = sensorReports.Length * 4;
-		Span<int> sensorReportsCoordinateBuffer = stackalloc int[sensorReportsCoordinateBufferSize];
+		var sensorReportsCoordinateBufferSize = sensorReports.Length * 3;
+		Span<Vector2> sensorReportsCoordinateBuffer = stackalloc Vector2[sensorReportsCoordinateBufferSize];
 
 		PrepareSensorReportsCoordinateBuffer(ref sensorReports, sensorReportsCoordinateBuffer, out var minX, out var maxX, out _, out _);
 
@@ -63,7 +63,7 @@ public class Day15 : HappyPuzzleBase
 		throw new NotImplementedException();
 	}
 
-	private static void PrepareSensorReportsCoordinateBuffer(ref ReadOnlySpan<string> sensorReportsRaw, scoped Span<int> sensorReportsCoordinateBuffer,
+	private static void PrepareSensorReportsCoordinateBuffer(ref ReadOnlySpan<string> sensorReportsRaw, scoped Span<Vector2> sensorReportsCoordinateBuffer,
 		out int minX, out int maxX, out int minY, out int maxY)
 	{
 		minX = int.MaxValue;
@@ -76,27 +76,28 @@ public class Day15 : HappyPuzzleBase
 		{
 			var sensorReportRaw = sensorReportsRaw[i].AsSpan()[SENSOR_AT_OFFSET..];
 
+			ref var sensorCoordinate = ref sensorReportsCoordinateBuffer[sensorReportsCoordinateBufferIndex++];
+
 			var sensorReportRawTraversalIndex = 0;
-			ExtractAndParseCoordinate(sensorReportRaw, ref sensorReportRawTraversalIndex,
-				sensorReportsCoordinateBuffer, ref sensorReportsCoordinateBufferIndex,
-				ref minX, ref maxX, ref minY, ref maxY);
+			ExtractAndParseCoordinate(sensorReportRaw, ref sensorReportRawTraversalIndex, ref sensorCoordinate);
 
 			sensorReportRawTraversalIndex += CLOSEST_BEACON_OFFSET;
 
-			ExtractAndParseCoordinate(sensorReportRaw, ref sensorReportRawTraversalIndex,
-				sensorReportsCoordinateBuffer, ref sensorReportsCoordinateBufferIndex,
-				ref minX, ref maxX, ref minY, ref maxY);
+			ref var beaconCoordinate = ref sensorReportsCoordinateBuffer[sensorReportsCoordinateBufferIndex++];
+
+			ExtractAndParseCoordinate(sensorReportRaw, ref sensorReportRawTraversalIndex, ref beaconCoordinate);
+
+			ref var distanceVector = ref sensorReportsCoordinateBuffer[sensorReportsCoordinateBufferIndex++];
+
+			distanceVector = Vector2.Abs(sensorCoordinate - beaconCoordinate);
+			distanceVector = new Vector2(distanceVector.X + distanceVector.Y, 0);
 		}
 	}
 
 	private static void ExtractAndParseCoordinate(
 		ReadOnlySpan<char> sensorReportRaw, ref int sensorReportRawTraversalIndex,
-		scoped Span<int> sensorReportsCoordinateBuffer, ref int sensorReportsCoordinateBufferIndex,
-		ref int minX, ref int maxX, ref int minY, ref int maxY)
+		ref Vector2 coordinate)
 	{
-		ref var x = ref sensorReportsCoordinateBuffer[sensorReportsCoordinateBufferIndex++];
-		ref var y = ref sensorReportsCoordinateBuffer[sensorReportsCoordinateBufferIndex++];
-
 		var startIndex = sensorReportRawTraversalIndex;
 
 		do
@@ -104,17 +105,7 @@ public class Day15 : HappyPuzzleBase
 			sensorReportRawTraversalIndex++;
 		} while (sensorReportRaw[sensorReportRawTraversalIndex] != ',');
 
-		x = SpecializedCaedenIntParser(sensorReportRaw.Slice(startIndex, sensorReportRawTraversalIndex - startIndex));
-
-		if (x < minX)
-		{
-			minX = x;
-		}
-
-		if (x > maxX)
-		{
-			maxX = x;
-		}
+		var x = SpecializedCaedenIntParser(sensorReportRaw.Slice(startIndex, sensorReportRawTraversalIndex - startIndex));
 
 		sensorReportRawTraversalIndex += 4;
 		startIndex = sensorReportRawTraversalIndex;
@@ -124,17 +115,9 @@ public class Day15 : HappyPuzzleBase
 			sensorReportRawTraversalIndex++;
 		} while (sensorReportRawTraversalIndex < sensorReportRaw.Length && sensorReportRaw[sensorReportRawTraversalIndex] != ':');
 
-		y = SpecializedCaedenIntParser(sensorReportRaw.Slice(startIndex, sensorReportRawTraversalIndex - startIndex));
+		var y = SpecializedCaedenIntParser(sensorReportRaw.Slice(startIndex, sensorReportRawTraversalIndex - startIndex));
 
-		if (y < minY)
-		{
-			minY = y;
-		}
-
-		if (y > maxY)
-		{
-			maxY = y;
-		}
+		coordinate = new Vector2(x, y);
 	}
 
 	private static int CalculateManhattenDistance(int x1, int y1, int x2, int y2)
